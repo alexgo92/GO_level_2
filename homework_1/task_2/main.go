@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
@@ -22,10 +22,10 @@ type JsonStruct struct {
 // создание собственной ошибки
 type MyErr struct {
 	err     string
-	timeNow string
+	timeNow time.Time
 }
 
-func New(err string, time string) error {
+func New(err string, time time.Time) error {
 	return &MyErr{
 		err:     err,
 		timeNow: time,
@@ -38,34 +38,30 @@ func (e MyErr) Error() string {
 
 func main() {
 	file, err := os.Open("./test_data/j.json")
+	defer file.Close()
 	if err != nil {
-		fmt.Println(errors.New("error: file cann't be opened"))
-		os.Exit(0)
+		log.Fatalf("error: %s", err)
 	}
-	// отложенно закрываем файл
-	defer func() {
-		if err = file.Close(); err != nil {
-			fmt.Printf("very bad: %s", err)
-		}
-	}()
 
 	// создаем структуру и считываем в нее даные из json файла
 	jsonapp := JsonStruct{}
 	err = json.NewDecoder(file).Decode(&jsonapp)
 	if err != nil {
-		fmt.Printf("error: %s\n", err)
-		os.Exit(0)
+		log.Fatalf("error: %s", err)
 	}
 
 	// отложенный вызов обрабатывающий паническую ситуацию
 	// и выводящий собственную ошибку с указанием времени панической ситуации
 	defer func() {
-		recoverErr := recover()
-		if recoverErr != nil {
-			tNow := time.Now()
-			formatTimeNow := tNow.Format("15:04")
+		if recoverErr := recover(); recoverErr != nil {
+			tNow := time.Now().UTC()
+			rus, err := time.LoadLocation("Europe/Moscow")
+			if err != nil {
+				fmt.Printf("can't tell the time: %s\n", err)
+			}
+			formatTimeNow := tNow.In(rus)
 			strRerecoverErr := fmt.Sprintf("%v", recoverErr)
-			err := fmt.Errorf("panic caught: %w", New(strRerecoverErr, formatTimeNow))
+			err = fmt.Errorf("panic caught: %w", New(strRerecoverErr, formatTimeNow))
 			fmt.Println(err)
 		}
 	}()

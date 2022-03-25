@@ -4,8 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -28,14 +28,13 @@ func main() {
 	// создаем директорию
 	err := os.MkdirAll(directoryPathWithout, 0777)
 	if err != nil {
-		fmt.Printf("can't create a directory: %v\n", err)
-		os.Exit(0)
+		log.Fatalf("error: %s", err)
 	}
 
 	// создание 100 файлов, а не 1 млн. поскольку система тупит долго, но ошибку все равно не выдает
 	// можно просто поменять число 100 на 1 млн.
 	for i := 0; i < 100; i++ {
-		fileName := *dirPath + "/" + "file" + strconv.Itoa(i)
+		fileName := *dirPath + "/" + "file" + fmt.Sprint(i)
 		file, err := os.Create(fileName)
 		if err != nil {
 			fmt.Println(errors.New("error: can't create"), fileName)

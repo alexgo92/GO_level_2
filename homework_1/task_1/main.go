@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -21,29 +21,21 @@ type JsonStruct struct {
 
 func main() {
 	file, err := os.Open("./test_data/j.json")
+	defer file.Close()
 	if err != nil {
-		fmt.Println(errors.New("error: file cann't be opened"))
-		os.Exit(0)
+		log.Fatalf("error: %s", err)
 	}
-	// отложенно закрываем файл
-	defer func() {
-		if err = file.Close(); err != nil {
-			fmt.Printf("very bad: %s", err)
-		}
-	}()
 
 	// создаем структуру и считываем в нее даные из json файла
 	jsonapp := JsonStruct{}
 	err = json.NewDecoder(file).Decode(&jsonapp)
 	if err != nil {
-		fmt.Printf("error: %s\n", err)
-		os.Exit(0)
+		log.Fatalf("error: %s", err)
 	}
 
 	// отложенный вызов обрабатывающий паническую ситуацию
 	defer func() {
-		err := recover()
-		if err != nil {
+		if err := recover(); err != nil {
 			fmt.Printf("panic caught: %s\n", err)
 		}
 	}()

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	createFile "github.com/alexgo92/GO_level_2/homework_1/task_3/second_option/create"
@@ -29,8 +29,9 @@ func main() {
 	// создаем директорию
 	err := os.MkdirAll(directoryPathWithout, 0777)
 	if err != nil {
-		fmt.Printf("can't create a directory: %v\n", err)
-		os.Exit(0)
+		if err != nil {
+			log.Fatalf("error: %s", err)
+		}
 	}
 
 	// создание 100 файлов, а не 1 млн. поскольку система тупит долго, но ошибку все равно не выдает
@@ -38,7 +39,7 @@ func main() {
 	for i := 0; i < 100; i++ {
 		// второй вариант решения - переносим все (создание и defer) в отдельную функцию CreateFile()
 		// но по фату это, наверное, аналогично первому варианту
-		fileName := *dirPath + "/" + "file" + strconv.Itoa(i)
+		fileName := *dirPath + "/" + "file" + fmt.Sprint(i)
 		createFile.CreateFile(fileName)
 	}
 }
