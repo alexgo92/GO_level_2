@@ -2,25 +2,26 @@ package main
 
 import (
 	"fmt"
-	"time"
+)
+
+const (
+	numberOfGoroutines = 1000
 )
 
 func main() {
-	var num int
+	ch := make(chan int, 1000)
 
-	workers := make(chan struct{}, 1000)
-
-	for i := 0; i < 1000; i++ {
-		workers <- struct{}{}
-
-		go func(num *int) {
-			defer func() {
-				<-workers
-			}()
-			*num++
-			// time.Sleep(time.Second) из за меняющегося итогового результата(num) убрал
-		}(&num)
+	for i := 0; i < numberOfGoroutines; i++ {
+		go func() {
+			ch <- 1
+		}()
 	}
-	time.Sleep(time.Second * 1)
-	fmt.Println(num)
+
+	var total int
+
+	for i := 0; i < numberOfGoroutines; i++ {
+		<-ch
+		total++
+	}
+	fmt.Println(total)
 }
