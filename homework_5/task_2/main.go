@@ -10,10 +10,6 @@ type MutexCounter struct {
 	count int
 }
 
-func (mC *MutexCounter) mutexDeferUnlocker() {
-	defer mC.mu.Unlock()
-}
-
 func main() {
 	var (
 		counter MutexCounter
@@ -25,9 +21,8 @@ func main() {
 
 		go func(c *MutexCounter) {
 			c.mu.Lock()
-			// defer c.mu.Unlock()
+			defer c.mu.Unlock()
 			c.count++
-			c.mutexDeferUnlocker()
 			wg.Done()
 		}(&counter)
 	}
